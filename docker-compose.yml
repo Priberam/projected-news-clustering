@@ -1,0 +1,15 @@
+version: "2.4"
+services:
+  projected-news-clustering:
+    env_file: .env
+    image: dockers.priberam.com/projected-news-clustering:${PROJECTED_NEWS_CLUSTERING_VER}
+    build:
+      context: ./
+    ports:
+      - "9029:80"
+    environment:
+      Main__DistilService__Url: "http://gpusrv02.interno.priberam.pt:11820"
+      Main__ConnectionString: "/app/state/state.db"
+      Main__EnableSaveClusterPool: "false"
+    volumes:
+      - ./state:/app/state:rw

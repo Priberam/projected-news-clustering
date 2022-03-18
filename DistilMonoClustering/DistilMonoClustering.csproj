@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonRazor" Version="1.5.1" />
+    <PackageReference Include="MathNet.Numerics" Version="4.12.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Nlog" Version="4.7.4" />
+    <PackageReference Include="Nlog.Web.AspNetCore" Version="4.9.3" />
+    <PackageReference Include="ScottPlot" Version="4.0.48" />
+    <PackageReference Include="Ulid" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>

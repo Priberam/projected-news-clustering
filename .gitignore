@@ -1,0 +1,13 @@
+*.pyc
+*.cache
+*/bin/*
+*/obj/*
+/state/*
+/datasets/*
+*.db
+*.csproj.user
+*.db-shm
+*.db-wal
+*.txt
+*.png
+!LICENSE.txt
