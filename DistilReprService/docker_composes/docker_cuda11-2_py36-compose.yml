@@ -1,0 +1,26 @@
+version: "2.4"
+
+services:
+  distil-service:
+    image: distil:${PRIBERAM_DISTIL_VER}
+    env_file: .env
+    build:
+      context: ../
+      dockerfile: ./docker_cuda11-2_py36/Dockerfile
+    ports:
+      - "10820:10050"
+    environment:
+      PYTHONUNBUFFERED: 1
+      CUDA_VISIBLE_DEVICES: 1
+      MAX_PARAGRAPHS: 40
+      MAX_SENTENCE_CHARACTERS: 4096
+    entrypoint: ["uvicorn", "--host", "0.0.0.0", "--port", "10050", "--workers", "1", "fastapi_web_handler:app"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    mem_limit: 4Gb
+    memswap_limit: 0Gb
+    #cpus: 8.0

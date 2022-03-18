@@ -1,5 +1,9 @@
 # Priberam Clustering
 
+
+
+
+
 ## Swagger
 
 Go to http://localhost:65065/index.html to see swagger docs.
