@@ -158,9 +158,9 @@ namespace DistilMonoClustering
 
       double[] features = new double[values.Length];
 
-      for(int i = 0; i < values.Length; i += 1)
+      for (int i = 0; i < values.Length; i += 1)
       {
-        if(weights.Keys.Contains(values[i]))
+        if (weights.Keys.Contains(values[i]))
         {
           features[i] = weights[values[i]];
         }
@@ -188,9 +188,9 @@ namespace DistilMonoClustering
 
       double[] features = new double[values.Length];
 
-      for(int i = 0; i < values.Length; i += 1)
+      for (int i = 0; i < values.Length; i += 1)
       {
-        if(merge_weights.Keys.Contains(values[i]))
+        if (merge_weights.Keys.Contains(values[i]))
         {
           features[i] = merge_weights[values[i]];
         }
@@ -218,16 +218,16 @@ namespace DistilMonoClustering
         merge_weights.sv_coef = double.Parse(segments[0], inv_c);
 
         // configure the connections between feature number and feature name in appsettings.json?
-        double[] features_allowed = new double[] {1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0};  //no title_repr and density features
+        double[] features_allowed = new double[] { 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0 };  //no title_repr and density features
 
         double[] features_parsed = new double[features_allowed.Length];
 
         var fn = 1;
         for (var feat = 0; feat < features_parsed.Length; feat++)
         {
-          if(features_allowed[feat] == 1)
+          if (features_allowed[feat] == 1)
             features_parsed[feat] = double.Parse(segments[fn].Split(":")[1], inv_c);
-            fn += 1;
+          fn += 1;
         }
         merge_weights.ParseFeatureArray(features_parsed);
         //merge_weights[features_ordered[fn - 1]] = double.Parse(segments[fn].Split(":")[1], inv_c);
@@ -459,21 +459,21 @@ namespace DistilMonoClustering
       DocumentRepresentation documentRepr = new DocumentRepresentation();
       documentRepr.payload = document;
 
-      if(feature_reprs.main_repr != null)
+      if (feature_reprs.main_repr != null)
         documentRepr.representation = feature_reprs.main_repr;
 
-      if(feature_reprs.paragraph_repr != null)
+      if (feature_reprs.paragraph_repr != null)
       {
         documentRepr.payload.paragraph_repr = feature_reprs.paragraph_repr;
         documentRepr.payload.use_paragraph_representation = true;
       }
-      if(feature_reprs.title_paragraph_repr != null)
+      if (feature_reprs.title_paragraph_repr != null)
       {
-        documentRepr.payload.title_paragraph_repr= feature_reprs.title_paragraph_repr;
+        documentRepr.payload.title_paragraph_repr = feature_reprs.title_paragraph_repr;
         documentRepr.payload.use_title_paragraph_representation = true;
       }
 
-            List<PutDocumentResult> putDocumentResults = PutDocument(documentRepr);
+      List<PutDocumentResult> putDocumentResults = PutDocument(documentRepr);
 
 
       foreach (var putDocumentResult in putDocumentResults)
@@ -510,7 +510,7 @@ namespace DistilMonoClustering
         distil_reprs.main_repr = ParseDenseVector(binary_reader);
         distil_reprs.paragraph_repr = ParseDenseVector(binary_reader);
         distil_reprs.title_paragraph_repr = ParseDenseVector(binary_reader);
-       
+
 
         this.stream_position = stream.Position;
       }
@@ -519,18 +519,18 @@ namespace DistilMonoClustering
     }
 
     public DenseVector ParseDenseVector(BinaryReader binary_reader)
-        {
+    {
 
-            DenseVector dense_vector = new DenseVector();
-            
-            for (int i = 0; i < dense_vector.dense_vector.Count; i += 1)
-            {
-                double el = binary_reader.ReadDouble();
-                dense_vector.dense_vector[i] = el;
-            }
+      DenseVector dense_vector = new DenseVector();
 
-            return dense_vector;
-        }
+      for (int i = 0; i < dense_vector.dense_vector.Count; i += 1)
+      {
+        double el = binary_reader.ReadDouble();
+        dense_vector.dense_vector[i] = el;
+      }
+
+      return dense_vector;
+    }
 
 
     public List<PutDocumentResult> PutDocument(DocumentRepresentation documentRepr)
@@ -610,21 +610,21 @@ namespace DistilMonoClustering
           //var distil_reprs = new Dictionary<string, DenseVector>();
           HttpResponseMessage distil_result = await StaticHttpClient.Instance.PostAsync(url, post_content);
           result_string = await distil_result.Content.ReadAsStringAsync();
-                    //var result_json = JsonRazor.JsonToken.Read(result_string);
-                    //JObject result_json = JObject.Parse(result_string);
-                    //var feature_reprs = Deserializer.Consume<JsonRepr>(result_string);
-                    var feature_reprs = JsonConvert.DeserializeObject<JsonRepr>(result_string);
+          //var result_json = JsonRazor.JsonToken.Read(result_string);
+          //JObject result_json = JObject.Parse(result_string);
+          //var feature_reprs = Deserializer.Consume<JsonRepr>(result_string);
+          var feature_reprs = JsonConvert.DeserializeObject<JsonRepr>(result_string);
           JsonDenseRepr distil_reprs = new JsonDenseRepr(feature_reprs);
 
           //var feature_reprs = JsonConvert.DeserializeObject<Dictionary<string, double[]>>(result_json.ToString());
-          
+
           //change configuration bool to be defined in the beginning
           if (config_generate_new_stored_vectors)
           {
             using (Stream stream = File.Open(config_stored_vectors_path, FileMode.Append))
             {
               BinaryWriter binary_writer = new BinaryWriter(stream);
-              
+
               foreach (var f in feature_reprs.GetReprs())
               {
                 foreach (var el in f)
@@ -700,13 +700,22 @@ namespace DistilMonoClustering
 
         ClusterRankResult cr_result = RankCluster(document, document_hfv, cluster, m_classifier);
 
-        lock(lock_cluster)
+        lock (lock_cluster)
         {
           if (cr_result.rank > best_rank)
           {
             best_rank = cr_result.rank;
             best_clusterindex = m_state.active_clusters.IndexOf(cluster);
             cluster_info.similarity = cr_result.similarity;
+          }
+          if (document.use_forced_label && document.forced_label == cluster.forced_label)
+          {
+            forced_best_rank = double.MaxValue;
+            forced_best_clusterindex = m_state.active_clusters.IndexOf(cluster);
+          }
+          if (config_generate_rank_examples)
+          {
+            rank_examples.Add(cr_result);
           }
         }
       });
@@ -775,7 +784,7 @@ namespace DistilMonoClustering
         }
       }
 
-      if (document.use_forced_label && !(forced_best_clusterindex == -1))
+      if (document.use_forced_label)
       {
         best_rank = forced_best_rank;
         best_clusterindex = forced_best_clusterindex;
@@ -829,14 +838,14 @@ namespace DistilMonoClustering
       {
         var i = 0;
         var label = document_label == cr_result.cluster_forced_label ? 1 : 0;
-        double[] feature_mask = new double[] {1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0};  //no title_repr and target_density
+        double[] feature_mask = new double[] { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0 };  //no title_repr and target_density
         var feature_array = cr_result.similarity.GetFeatureArray();
         //string[] features_ordered = { "embedding_all", "NEWEST_TS", "OLDEST_TS", "RELEVANCE_TS", "paragraph_repr", "title_paragraph_repr", "paragraph_centroid", "title_paragraph_centroid", "cluster_density", "mean_similarity"};
         rankingWriter.Write(label + " qid:" + qid + " ");
 
-        for(var f = 0; f < feature_mask.Length; f++)
+        for (var f = 0; f < feature_mask.Length; f++)
         {
-          if(feature_mask[f] == 1)
+          if (feature_mask[f] == 1)
           {
             i += 1;
             rankingWriter.Write(i.ToString() + ":" + feature_array[f].ToString("0.######", inv_c) + " ");
@@ -857,7 +866,7 @@ namespace DistilMonoClustering
 
         // we want { "embedding_all", "NEWEST_TS", "OLDEST_TS", "RELEVANCE_TS", "paragraph_repr", "title_paragraph_repr", "paragraph_centroid", "title_paragraph_centroid", "cluster_density", "mean_similarity" }
 
-        double[] feature_mask = new double[] {1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0};  //do not get title_repr or target_density
+        double[] feature_mask = new double[] { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0 };  //do not get title_repr or target_density
 
         var feature_array = cluster_info.similarity.GetFeatureArray();
 
@@ -865,9 +874,9 @@ namespace DistilMonoClustering
         rankingWriter.Write(label + " ");
         //foreach(string key in cluster_info.similarity.Keys)
 
-        for(var f = 0; f < feature_mask.Length; f++)
+        for (var f = 0; f < feature_mask.Length; f++)
         {
-          if(feature_mask[f] == 1)
+          if (feature_mask[f] == 1)
           {
             i += 1;
             rankingWriter.Write(i.ToString() + ":" + feature_array[f].ToString("0.######", inv_c) + " ");
@@ -883,15 +892,15 @@ namespace DistilMonoClustering
       {
         var i = 0;
         //string[] features_ordered = { "embedding_all", "NEWEST_TS", "OLDEST_TS", "RELEVANCE_TS", "paragraph_repr", "title_paragraph_repr", "paragraph_centroid", "title_paragraph_centroid", "cluster_density", "target_density"};
-        double[] feature_mask = new double[] {1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1};  //do not get title_repr or mean_similarity
+        double[] feature_mask = new double[] { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1 };  //do not get title_repr or mean_similarity
 
         var feature_array = sample.GetFeatureArray();
 
         rankingWriter.Write(label + " ");
 
-        for(var f = 0; f < feature_mask.Length; f++)
+        for (var f = 0; f < feature_mask.Length; f++)
         {
-          if(feature_mask[f] == 1)
+          if (feature_mask[f] == 1)
           {
             i += 1;
             rankingWriter.Write(i.ToString() + ":" + feature_array[f].ToString("0.######", inv_c) + " ");
@@ -899,17 +908,17 @@ namespace DistilMonoClustering
         }
         rankingWriter.Write("\n");
 
-/*
-        foreach (string key in features_ordered)
-        {
-          if (sample.Keys.Contains(key))
-          {
-            i += 1;
-            rankingWriter.Write(i.ToString() + ":" + sample[key].ToString("0.######", inv_c) + " ");
-          }
-        }
-        rankingWriter.Write("\n");
-        */
+        /*
+                foreach (string key in features_ordered)
+                {
+                  if (sample.Keys.Contains(key))
+                  {
+                    i += 1;
+                    rankingWriter.Write(i.ToString() + ":" + sample[key].ToString("0.######", inv_c) + " ");
+                  }
+                }
+                rankingWriter.Write("\n");
+                */
       }
 
     }
@@ -1363,16 +1372,16 @@ namespace DistilMonoClustering
           result.rank_result = rank_result;
           result.score = merge_rank;
           result.cluster = cluster_j;
-          
-          lock(merge_candidates)
+
+          lock (merge_candidates)
           {
             merge_candidates.Add(result);
           }
         }
-          //continue;
+        //continue;
 
         //if (merged_clusters.Contains(cluster_j.m_record_number))
-          //continue;
+        //continue;
 
 
       });
@@ -1479,14 +1488,14 @@ namespace DistilMonoClustering
           ClusterRankResult clu_rank;
           FeatureCollection clu_comparison;
 
-          if(has_merged)
+          if (has_merged)
           {
-              clu_rank = RankClusterPair(cluster_i, result.cluster);
-              clu_comparison = clu_rank.similarity;
+            clu_rank = RankClusterPair(cluster_i, result.cluster);
+            clu_comparison = clu_rank.similarity;
           }
           else
           {
-             clu_rank = result.rank_result;
+            clu_rank = result.rank_result;
             clu_comparison = result.rank_result.similarity;
 
           }
@@ -1808,42 +1817,42 @@ namespace DistilMonoClustering
   }
 
   public class JsonRepr
+  {
+    public double[] main_repr;
+    public double[] paragraph_repr;
+    public double[] title_paragraph_repr;
+
+
+    public List<double[]> GetReprs()
     {
-        public double[] main_repr;
-        public double[] paragraph_repr;
-        public double[] title_paragraph_repr;
+      return new List<double[]>() { main_repr, paragraph_repr, title_paragraph_repr };
+    }
+  }
 
+  public class JsonDenseRepr
+  {
+    public DenseVector main_repr;
+    public DenseVector paragraph_repr;
+    public DenseVector title_paragraph_repr;
 
-        public List<double[]> GetReprs()
-        {
-            return new List<double[]>() { main_repr, paragraph_repr, title_paragraph_repr };
-        }
+    public JsonDenseRepr()
+    {
+
     }
 
-    public class JsonDenseRepr
+    public JsonDenseRepr(JsonRepr jsonRepr)
     {
-        public DenseVector main_repr;
-        public DenseVector paragraph_repr;
-        public DenseVector title_paragraph_repr;
-
-        public JsonDenseRepr()
-        {
-
-        }
-
-        public JsonDenseRepr(JsonRepr jsonRepr)
-        {
-            if(jsonRepr.main_repr != null)
-              main_repr = new DenseVector(jsonRepr.main_repr);
-            if(jsonRepr.paragraph_repr != null)
-              paragraph_repr = new DenseVector(jsonRepr.paragraph_repr);
-            if(jsonRepr.title_paragraph_repr != null)
-              title_paragraph_repr = new DenseVector(jsonRepr.title_paragraph_repr);
-        }
-
+      if (jsonRepr.main_repr != null)
+        main_repr = new DenseVector(jsonRepr.main_repr);
+      if (jsonRepr.paragraph_repr != null)
+        paragraph_repr = new DenseVector(jsonRepr.paragraph_repr);
+      if (jsonRepr.title_paragraph_repr != null)
+        title_paragraph_repr = new DenseVector(jsonRepr.title_paragraph_repr);
     }
-     
-}    
-     
+
+  }
+
+}
+
 
 
